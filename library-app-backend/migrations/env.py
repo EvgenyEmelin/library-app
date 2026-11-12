@@ -7,6 +7,8 @@ from alembic import context
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
+from core.config import settings
+
 # чтобы можно было `import app...` при запуске alembic из корня backend/
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -21,10 +23,7 @@ from models.book import (
 config = context.config
 
 # подставляем реальный URL из окружения, чтобы не хранить его в alembic.ini
-db_url = os.getenv("DATABASE_URL")
-if not db_url:
-    raise RuntimeError("DATABASE_URL is not set (check backend/.env)")
-config.set_main_option("sqlalchemy.url", db_url)
+config.set_main_option("sqlalchemy.url", settings.database_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
