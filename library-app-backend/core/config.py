@@ -1,3 +1,5 @@
+import os
+
 from pydantic import SecretStr, computed_field
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -5,7 +7,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file = '.env'
+        env_file=os.getenv("ENV_FILE", ".env"),
+        extra="ignore",
     )
 
     db_user: str
@@ -14,11 +17,11 @@ class Settings(BaseSettings):
     db_port: int
     db_name: str
 
-
     @computed_field
     @property
     def database_url(self) -> str:
-        return str(MultiHostUrl.build(
+        return str(
+            MultiHostUrl.build(
                 scheme="postgresql+psycopg",
                 username=self.db_user,
                 password=self.db_password.get_secret_value(),
@@ -29,5 +32,4 @@ class Settings(BaseSettings):
         )
 
 
-settings = Settings() # type: ignore
-
+settings = Settings()  # type: ignore

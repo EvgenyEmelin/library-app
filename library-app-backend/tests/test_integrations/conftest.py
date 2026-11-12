@@ -3,10 +3,9 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import sessionmaker
-
-from sqlalchemy.orm import Session
 from repository.book import BookRepository
+from service.book import BookService
+from sqlalchemy.orm import Session, sessionmaker
 
 # Добавляем корень бэкенда в sys.path ДО импорта внутренних модулей
 BACKEND_DIR = Path(__file__).resolve().parents
@@ -15,7 +14,7 @@ sys.path.insert(0, str(BACKEND_DIR))
 from core.config import settings
 from db.session import create_engine, get_db
 from main import app
-from models.book import Base  # Убедитесь, что путь к Base совпадает с вашим проектом
+from models.book import Base
 
 # Страховка: не даем тестам запуститься, если .test.env не подхватился
 assert "test" in settings.db_name.lower(), (
@@ -53,7 +52,7 @@ def db_session(engine):
     yield session
 
     session.close()
-    # Откатываем транзакцию только если она еще активна (убирает SAWarning)
+    # Откатываем транзакцию только если она еще активна
     if transaction.is_active:
         transaction.rollback()
     connection.close()
@@ -72,3 +71,7 @@ def client(db_session):
 @pytest.fixture
 def repo(db_session: Session) -> BookRepository:
     return BookRepository(db_session)
+
+@pytest.fixture
+def service(db_session: Session) -> BookService:
+    return BookService(db_session)
