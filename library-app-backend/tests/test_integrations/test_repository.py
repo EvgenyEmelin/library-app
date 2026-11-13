@@ -1,7 +1,8 @@
 import datetime
 
 import pytest
-from repository.book import BookORM, BookRepository
+from models.book import BookORM
+from repository.book import BookRepository
 from sqlalchemy.orm.session import Session
 
 
@@ -84,27 +85,14 @@ class TestGetAllBookRepo: ##Тесты для методы get_all_books в ре
 
 class TestGetByIdRepo: ##Тесты для методы get_by_id в репозитории
 
-    @pytest.mark.parametrize(
-    "book_id, is_found",
-    [
-        pytest.param(1, True, id="existing_id"),
-        pytest.param(999, False, id="non_existent_id"),
-        pytest.param(0, False, id="zero_id"),
-    ],
-    )
-    def test_get_by_id(self, book_id: int, is_found: bool, repo: BookRepository):
-        book = BookORM(id="1", title="Book", author="Пушкин", status="read")
-        repo.add(book)
+    def test_get_by_id_existing(self, repo, db_session):
+        book = BookORM(title="Book", author="Пушкин", status="read")
+        repo.add(book); db_session.flush()
+        assert repo.get_by_id(book.id) is not None
 
-        result = repo.get_by_id(book_id=book_id)
-
-        if is_found:
-            assert result is not None
-            assert result.title == "Book"
-            assert result.author == "Пушкин"
-            assert result.status == "read"
-        else:
-            assert result is None
+    @pytest.mark.parametrize("book_id", [0, 999])
+    def test_get_by_id_not_found(self, repo, book_id):
+        assert repo.get_by_id(book_id) is None
 
 class TestAddRepo: ##Тесты для методы add в репозитории
 

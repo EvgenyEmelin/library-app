@@ -1,10 +1,10 @@
-import re
+
 from datetime import UTC, datetime, timedelta
-from tkinter import W
 
 import pytest
 from core.exceptions import BookNotFound
-from repository.book import BookORM, BookRepository
+from models.book import BookORM
+from repository.book import BookRepository
 from schemas.book import BookCreateSchema, BookUpdateSchema
 from service.book import BookService
 from sqlalchemy.orm import Session

@@ -111,14 +111,20 @@ class TestPostBook:
         assert data["created_at"] is not None
         assert data["updated_at"] is not None
 
-    @pytest.mark.parametrize("payload, expected_status",(
-            [{"title": "", "rating": 5, "year": 100, "status": "want"}, 400],
-            [{"title": " ", "rating": 5, "year": 100, "status": "want"}, 400],
-            [{"title": "test", "rating": 7, "year": 100, "status": "want"}, 400],
-            [{"title": "test", "rating": 5, "year": -1, "status": "want"}, 400],
-            [{"title": "test", "rating": 5, "year": 100, "status": "foo"}, 400],
-            [{}, 400],
-    ))
+    @pytest.mark.parametrize(
+    "payload, expected_status",
+    [
+        ({"title": "", "author": "A"}, 400),
+        ({"title": " ", "author": "A"}, 400),
+        ({"title": "T", "author": ""}, 400),
+        ({"title": "T", "author": "A", "rating": 7}, 400),
+        ({"title": "T", "author": "A", "rating": 0}, 400),
+        ({"title": "T", "author": "A", "year": -1}, 400),
+        ({"title": "T", "author": "A", "year": 3000}, 400),
+        ({"title": "T", "author": "A", "status": "foo"}, 400),
+        ({}, 400),
+    ],
+)
     def test_post_book_not_valid(self, client, payload, expected_status):
 
         response = client.post("/api/books", json=payload)
@@ -150,10 +156,131 @@ class TestPostBook:
         assert "extra_field" not in data
         assert data["title"] == "Книга 1"
 
+class TestPutBook:
+
+    def test_update_book_valid(self, client):
+        payload = {
+                    "title": "Книга 1",
+                    "author": "Пушкин",
+                    "status": "want",
+                }
+        response_create = client.post("/api/books", json=payload)
 
 
+        assert response_create.status_code == 201
+
+        book_id = response_create.json()["id"]
 
 
-    
+        payload_update = {
+        "title": "Книга новая",
+        "author": "Автор",
+        "status": "read",
+    }
+
+        response_update = client.put(f"/api/books/{book_id}", json=payload_update)
+
+        assert response_update.status_code == 200
+
+        data = response_update.json()
+
+        assert data["id"] == book_id
+        assert data["title"] == payload_update["title"]
+        assert data["author"] == payload_update["author"]
+        assert data["status"] == payload_update["status"]
+
+    def test_update_book_not_valid(self, client):
+        book_id = 999999
+
+        payload_update = {
+                "title": "Книга новая",
+                "author": "Автор",
+                "status": "read",
+        }
+
+        response_update = client.put(f"/api/books/{book_id}", json=payload_update)
+
+        assert response_update.status_code == 404
+        assert response_update.json() == {"error": f"Book with id={book_id} not found"}
+
+    def test_update_book_empty(self, client):
+        create = client.post("/api/books", json={"title": "X", "author": "Y"})
+        book_id = create.json()["id"]
+        response_update = client.put(f"/api/books/{book_id}", json={})
+        assert response_update.status_code == 400
+
+    def test_update_book_updated_at_gt_created_at(self, client):
+        payload = {
+                    "title": "Книга 1",
+                    "author": "Пушкин",
+                    "status": "want",
+                }
+        response_create = client.post("/api/books", json=payload)
+        assert response_create.status_code == 201
+
+        assert response_create.status_code == 201
+        book_id = response_create.json()["id"]
+        created_at = response_create.json()["created_at"]
+
+        payload_update = {
+                       "title": "Книга 1",
+                       "author": "Пушкин",
+                       "status": "want",
+                }
+        response_update = client.put(f"/api/books/{book_id}", json=payload_update)
+        assert response_update.status_code == 200
+        
+        updated_data = response_update.json()
+
+        assert updated_data["created_at"] == created_at
+        assert updated_data["updated_at"] > created_at
+
+    def test_update_book_wrong_id(self, client):
+        book_id = "abc"
+
+        payload_update = {
+                       "title": "Книга 1",
+                       "author": "Пушкин",
+                       "status": "want",
+                }
+
+        response_update = client.put(f"/api/books/{book_id}", json=payload_update)
+
+        assert response_update.status_code == 400
+
+class TestDeleteBook:
+    def test_delete_book_valid(self, client):
+
+        payload = {
+            "title": "Книга для удаления",
+            "author": "Пушкин",
+            "status": "want",
+        }
+        response_create = client.post("/api/books", json=payload)
+        assert response_create.status_code == 201
+        book_id = response_create.json()["id"]
+
+        response_delete = client.delete(f"/api/books/{book_id}")
+        assert response_delete.status_code == 204
+        assert response_delete.content == b""
+
+
+        response_get = client.get(f"/api/books/{book_id}")
+        assert response_get.status_code == 404
+
+    def test_delete_book_not_found(self, client):
+        book_id = 999999
+        response = client.delete(f"/api/books/{book_id}")
+
+        assert response.status_code == 404
+        assert response.json() == {"error": f"Book with id={book_id} not found"}
+
+    @pytest.mark.parametrize("book_id", ["abc", 0, -1])
+    def test_delete_book_invalid_id(self, client, book_id):
+        response = client.delete(f"/api/books/{book_id}")
+
+        assert response.status_code == 400
+
+
 
 

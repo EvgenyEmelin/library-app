@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from models.book import BookORM
 from repository.book import BookRepository
 from service.book import BookService
 from sqlalchemy.orm import Session, sessionmaker

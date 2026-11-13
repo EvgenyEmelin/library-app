@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from core.exceptions import BookNotFound
 from models.book import BookORM
 from repository.book import BookRepository
@@ -42,6 +44,12 @@ class BookService:
         book = self.get_book(book_id)
         for f,v in data.model_dump().items():
             setattr(book, f, v)
+
+        if book.created_at.tzinfo is None:
+            book.updated_at = datetime.now(UTC).replace(tzinfo=None)
+        else:
+            book.updated_at = datetime.now(UTC)
+    
         self.db.commit()
         self.db.refresh(book)
         return book
