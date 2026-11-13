@@ -90,7 +90,7 @@ class TestGetBookById:
         assert response.json() == {"error" : f"Book with id={book_id} not found"}
 
     @pytest.mark.parametrize("book_id", ["abc", 0, -1])
-    def test_bok_by_id_not_valid(self, client, book_id):
+    def test_book_by_id_not_valid(self, client, book_id):
 
         response = client.get(f"/api/books/{book_id}")
 
