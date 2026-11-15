@@ -3,18 +3,19 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from repository.book import BookRepository
-from service.book import BookService
 from sqlalchemy.orm import Session, sessionmaker
-
-# Добавляем корень бэкенда в sys.path ДО импорта внутренних модулей
-BACKEND_DIR = Path(__file__).resolve().parents
-sys.path.insert(0, str(BACKEND_DIR))
 
 from core.config import settings
 from db.session import create_engine, get_db
 from main import app
 from models.book import Base
+from repository.book import BookRepository
+from service.book import BookService
+
+# Добавляем корень бэкенда в sys.path ДО импорта внутренних модулей
+BACKEND_DIR = Path(__file__).resolve().parents
+sys.path.insert(0, str(BACKEND_DIR))
+
 
 # Страховка: не даем тестам запуститься, если .test.env не подхватился
 assert "test" in settings.db_name.lower(), (
@@ -68,9 +69,11 @@ def client(db_session):
         yield test_client
     app.dependency_overrides.clear()
 
+
 @pytest.fixture
 def repo(db_session: Session) -> BookRepository:
     return BookRepository(db_session)
+
 
 @pytest.fixture
 def service(db_session: Session) -> BookService:

@@ -1,4 +1,3 @@
-import os
 import sys
 from logging.config import fileConfig
 from pathlib import Path
@@ -8,17 +7,15 @@ from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
 from core.config import settings
+from models.book import (
+    Base,
+)
 
 # чтобы можно было `import app...` при запуске alembic из корня backend/
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 # читаем .env из корня backend/
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
-
-from models.book import (
-    Base,  # или откуда у тебя Base
-    BookORM,  # noqa: F401  — регистрирует таблицу в metadata
-)
 
 config = context.config
 

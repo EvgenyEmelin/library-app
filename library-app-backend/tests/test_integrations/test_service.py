@@ -1,20 +1,20 @@
-
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from sqlalchemy.orm import Session
+
 from core.exceptions import BookNotFound
 from models.book import BookORM
 from repository.book import BookRepository
 from schemas.book import BookCreateSchema, BookUpdateSchema
 from service.book import BookService
-from sqlalchemy.orm import Session
 
 
 class TestGetBookService:
-
-
-    def test_get_book_success(self, service: BookService, repo: BookRepository, db_session: Session):
-        book = BookORM(id=1,title='Книга 1', author="Пушкин", status="read")
+    def test_get_book_success(
+        self, service: BookService, repo: BookRepository, db_session: Session
+    ):
+        book = BookORM(id=1, title="Книга 1", author="Пушкин", status="read")
 
         repo.add(book)
         db_session.flush()
@@ -35,10 +35,12 @@ class TestGetBookService:
 
         assert str(not_valid_id) in str(exp.value)
 
-class TestCreateBookService:
 
-    def test_create_book_success(self, service: BookService, repo: BookRepository, db_session: Session):
-        book_schema = BookCreateSchema(title='Книга 1', author='Пушкин', status='read')
+class TestCreateBookService:
+    def test_create_book_success(
+        self, service: BookService, repo: BookRepository, db_session: Session
+    ):
+        book_schema = BookCreateSchema(title="Книга 1", author="Пушкин", status="read")
 
         result = service.create_book(book_schema)
 
@@ -48,18 +50,20 @@ class TestCreateBookService:
         assert result.author == book_schema.author
         assert result.status == book_schema.status
 
-    def test_create_book_without_notes(self, service: BookService, repo: BookRepository, db_session: Session):
-        book_schema = BookCreateSchema(title='Книга 1', author='Пушкин', status='read', notes="")
+    def test_create_book_without_notes(
+        self, service: BookService, repo: BookRepository, db_session: Session
+    ):
+        book_schema = BookCreateSchema(title="Книга 1", author="Пушкин", status="read", notes="")
 
         result = service.create_book(book_schema)
 
         assert result.notes is None
 
-class TestUpdateBookService:
 
+class TestUpdateBookService:
     def test_update_book(self, service: BookService, repo: BookRepository, db_session: Session):
 
-        book = BookORM(id=1,title='Книга 1', author="Пушкин", status="read")
+        book = BookORM(id=1, title="Книга 1", author="Пушкин", status="read")
         book_update_data = BookUpdateSchema(title="Книга 12", author="Булгаков")
 
         repo.add(book)
@@ -76,7 +80,7 @@ class TestUpdateBookService:
         assert result.updated_at > old_time
 
     def test_update_status(self, service: BookService, repo: BookRepository, db_session: Session):
-        book = BookORM(id=1,title='Книга 1', author="Пушкин", status="read")
+        book = BookORM(id=1, title="Книга 1", author="Пушкин", status="read")
         book_update_data = BookUpdateSchema(title="Книга 12", author="Булгаков")
 
         repo.add(book)
@@ -95,11 +99,11 @@ class TestUpdateBookService:
 
         assert str(wrong_id) in str(exp.value)
 
-class TestDeleteBookService:
 
+class TestDeleteBookService:
     def test_delete_book(self, service: BookService, repo: BookRepository, db_session: Session):
 
-        book = BookORM(id=1,title='Книга 1', author="Пушкин", status="read")
+        book = BookORM(id=1, title="Книга 1", author="Пушкин", status="read")
 
         repo.add(book)
         db_session.flush()
@@ -120,12 +124,12 @@ class TestDeleteBookService:
 
         assert str(wrong_id) in str(exp.value)
 
-class TestListBookService:
 
+class TestListBookService:
     def test_list_books(self, service: BookService, repo: BookRepository, db_session: Session):
-        book_1 = BookORM(title='Книга 1', author="Пушкин", status="read")
-        book_2 = BookORM(title='Книга 2', author="Гоголь", status="read")
-        book_3 = BookORM(title='Книга 3', author="Толстой", status="read")
+        book_1 = BookORM(title="Книга 1", author="Пушкин", status="read")
+        book_2 = BookORM(title="Книга 2", author="Гоголь", status="read")
+        book_3 = BookORM(title="Книга 3", author="Толстой", status="read")
 
         repo.add(book_1)
         repo.add(book_2)
@@ -137,9 +141,11 @@ class TestListBookService:
 
         assert len(result) == 3
 
-    def test_list_books_search(self, service: BookService, repo: BookRepository, db_session: Session):
-        book_1 = BookORM(title='Книга 1', author="Пушкин", status="read")
-        book_2 = BookORM(title='Книга 2', author="Гоголь", status="read")
+    def test_list_books_search(
+        self, service: BookService, repo: BookRepository, db_session: Session
+    ):
+        book_1 = BookORM(title="Книга 1", author="Пушкин", status="read")
+        book_2 = BookORM(title="Книга 2", author="Гоголь", status="read")
 
         repo.add(book_1)
         repo.add(book_2)

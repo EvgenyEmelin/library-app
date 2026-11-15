@@ -1,13 +1,13 @@
 import datetime
 
 import pytest
-from models.book import BookORM
-from repository.book import BookRepository
 from sqlalchemy.orm.session import Session
 
+from models.book import BookORM
+from repository.book import BookRepository
 
-class TestGetAllBookRepo: ##Тесты для методы get_all_books в репозитории
 
+class TestGetAllBookRepo:  ##Тесты для методы get_all_books в репозитории
     def test_get_all_books_empty(self, repo: BookRepository):
         result = repo.get_all_books()
         assert result == []
@@ -15,11 +15,15 @@ class TestGetAllBookRepo: ##Тесты для методы get_all_books в ре
     def test_all_books_created_at_desc(self, repo: BookRepository):
         now = datetime.datetime.now(datetime.UTC)
 
-        book_old = BookORM(title="Книга 1", author="Автор", created_at = now - datetime.timedelta(hours=2))
+        book_old = BookORM(
+            title="Книга 1", author="Автор", created_at=now - datetime.timedelta(hours=2)
+        )
 
-        book_mid = BookORM(title="Книга 2", author="Автор", created_at = now - datetime.timedelta(hours=1))
+        book_mid = BookORM(
+            title="Книга 2", author="Автор", created_at=now - datetime.timedelta(hours=1)
+        )
 
-        book_new = BookORM(title="Книга 3", author="Автор", created_at = now)
+        book_new = BookORM(title="Книга 3", author="Автор", created_at=now)
 
         repo.add(book_old)
         repo.add(book_mid)
@@ -29,11 +33,7 @@ class TestGetAllBookRepo: ##Тесты для методы get_all_books в ре
 
         assert [book.title for book in result] == ["Книга 3", "Книга 2", "Книга 1"]
 
-    @pytest.mark.parametrize("search_char, expected_title",
-                             [
-                                 ("_", "file_name"),
-                                 ("%", "100%")
-                             ])
+    @pytest.mark.parametrize("search_char, expected_title", [("_", "file_name"), ("%", "100%")])
     def test_all_books_like(self, search_char: str, expected_title: str, repo: BookRepository):
 
         book = BookORM(title="Книга 1", author="Булгаков", status="read")
@@ -50,14 +50,16 @@ class TestGetAllBookRepo: ##Тесты для методы get_all_books в ре
         assert result[0].title == expected_title
 
     @pytest.mark.parametrize(
-                            "filter_kwargs, expected_title",
-                            [
-                                ({"status": "read"}, "Мастер и Маргарита"),
-                                ({"search": "булг"}, "Мастер и Маргарита"),
-                                ({"search": "Мастер"}, "Мастер и Маргарита"),
-                            ],
-)
-    def test_get_all_books_by_filter(self, filter_kwargs: dict, expected_title: str, repo: BookRepository):
+        "filter_kwargs, expected_title",
+        [
+            ({"status": "read"}, "Мастер и Маргарита"),
+            ({"search": "булг"}, "Мастер и Маргарита"),
+            ({"search": "Мастер"}, "Мастер и Маргарита"),
+        ],
+    )
+    def test_get_all_books_by_filter(
+        self, filter_kwargs: dict, expected_title: str, repo: BookRepository
+    ):
         target_book = BookORM(title="Мастер и Маргарита", author="Булгаков", status="read")
         other_book = BookORM(title="Капитанская дочка", author="Пушкин", status="want")
         repo.add(target_book)
@@ -83,19 +85,19 @@ class TestGetAllBookRepo: ##Тесты для методы get_all_books в ре
         assert result[0].status == "read"
 
 
-class TestGetByIdRepo: ##Тесты для методы get_by_id в репозитории
-
+class TestGetByIdRepo:  ##Тесты для методы get_by_id в репозитории
     def test_get_by_id_existing(self, repo, db_session):
         book = BookORM(title="Book", author="Пушкин", status="read")
-        repo.add(book); db_session.flush()
+        repo.add(book)
+        db_session.flush()
         assert repo.get_by_id(book.id) is not None
 
     @pytest.mark.parametrize("book_id", [0, 999])
     def test_get_by_id_not_found(self, repo, book_id):
         assert repo.get_by_id(book_id) is None
 
-class TestAddRepo: ##Тесты для методы add в репозитории
 
+class TestAddRepo:  ##Тесты для методы add в репозитории
     def test_add(self, repo: BookRepository, db_session: Session):
 
         book = BookORM(title="Book", author="Пушкин", status="read")
@@ -110,8 +112,8 @@ class TestAddRepo: ##Тесты для методы add в репозитори�
         assert result is not None
         assert book.id == result.id
 
-class TestDeleteRepo: ##Тесты для методы delete в репозитории
 
+class TestDeleteRepo:  ##Тесты для методы delete в репозитории
     def test_delete(self, repo: BookRepository, db_session: Session):
 
         book = BookORM(title="Book", author="Пушкин", status="read")
@@ -127,5 +129,3 @@ class TestDeleteRepo: ##Тесты для методы delete в репозит�
         result = repo.get_by_id(book_id)
 
         assert result is None
-
-

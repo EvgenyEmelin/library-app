@@ -7,9 +7,9 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 class Base(DeclarativeBase):
     pass
 
+
 class BookORM(Base):
     __tablename__ = "books"
-
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -19,14 +19,10 @@ class BookORM(Base):
     rating: Mapped[int | None] = mapped_column(nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-
     created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        server_default=func.now(),
-        onupdate=func.now(),
-        nullable=False
+        server_default=func.now(), onupdate=func.now(), nullable=False
     )
-
 
     __table_args__ = (
         CheckConstraint("year > 0 AND year < 2100", name="check_book_year_range"),
